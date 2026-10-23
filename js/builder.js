@@ -6,14 +6,14 @@
 // threshold re-scores the whole tree.
 
 const B_STATE = {
-  class: { set: "blobs", n: 25, noise: 0.35, seed: 1, depth: 3 },
-  reg: { set: "sine", n: 40, noise: 0.3, seed: 1, depth: 3 },
+  class: { set: "blobs", n: 25, noise: 0.35, seed: 1 },
+  reg: { set: "sine", n: 40, noise: 0.3, seed: 1 },
 };
 const B_N_RANGE = { class: [5, 100], reg: [5, 200] };
 // Diagram geometry: node box, horizontal slot per leaf, vertical level.
 const T_W = 108, T_H = 54, T_SLOT = 118, T_LEVEL = 86, T_PAD = 10;
-// Scan chart plot box, in its 400 x 178 viewBox.
-const SC = { x0: 46, x1: 390, y0: 10, y1: 138 };
+// Scan chart plot box, in its 400 x 168 viewBox.
+const SC = { x0: 52, x1: 390, y0: 8, y1: 128 };
 
 // Per mode: samples {X, y}, the tree root and the selected node.
 const bt = { class: {}, reg: {} };
@@ -97,21 +97,13 @@ function bestHere(nd) {
   return bestSplit(nd.idx, X, y, bC(), [...Array(bD()).keys()]);
 }
 
-/**
- * Split every leaf under nd greedily (best split) until it is pure, its
- * samples share one point, or it sits at the max depth (counted from the
- * root, as in sklearn's max_depth).
- */
-function growFrom(nd) {
-  if (nd.feat === null) {
-    if (nd.depth >= bcur().depth || nd.imp <= EPS) return;
+/** Give every impure leaf its best split: the tree grows one level. */
+function growLevel() {
+  for (const nd of bnodes) {
+    if (nd.feat !== null || nd.imp <= EPS) continue;
     const b = bestHere(nd);
-    if (!b) return;
-    setSplit(nd, b.feat, b.thr);
-    route(nd, nd.idx, nd.box, nd.depth, nd.parent);
+    if (b) setSplit(nd, b.feat, b.thr);
   }
-  growFrom(nd.left);
-  growFrom(nd.right);
 }
 
 /** Lay the tree out: leaves take slots left to right, parents center. */
@@ -400,8 +392,6 @@ let lastShown = null;
 
 // ------------------------------------------------------------ the editor
 
-const thrInput = document.getElementById("thr");
-
 /** HTML for a node's class mix (classification) or mean (regression). */
 function mixHtml(nd) {
   if (bmode === "class") {
@@ -417,83 +407,68 @@ function pathHtml(sel) {
     steps.unshift(nd === p.left ? `${x} ≤ ${fmt(p.thr)}`
       : `${x} &gt; ${fmt(p.thr)}`);
   }
-  return steps.length ? `Root, then ${steps.join(", then ")}` : "The root:"
-    + " every sample starts here.";
+  const where = steps.length ? steps.join(", then ") : "the root";
+  return `<b>Selected:</b> ${where} <span class="muted">(${sel.n}
+    sample${sel.n === 1 ? "" : "s"})</span>`;
+}
+
+/** A split button's label, with an icon for the line it draws. */
+function splitLabel(f, D) {
+  if (D === 1) return "Split";
+  return `<span class="ico ${f ? "h" : "v"}"></span>Split on ${xName(f, D)}`;
 }
 
 function drawEditor() {
   const sel = bdat().sel, isLeaf = sel.feat === null, D = bD();
-  const name = impName();
-  document.getElementById("node-title").textContent = sel.depth
-    ? `Selected node (depth ${sel.depth})` : "Selected node (root)";
+  const name = impName(), isClass = bmode === "class";
   document.getElementById("node-path").innerHTML = pathHtml(sel);
   document.getElementById("leaf-tools").hidden = !isLeaf;
   document.getElementById("split-tools").hidden = isLeaf;
-  document.getElementById("feat-row").hidden = D === 1;
+  document.getElementById("feat-seg").hidden = D === 1;
   document.getElementById("scan-box").hidden = isLeaf || !sel.n;
   for (const b of document.querySelectorAll("[data-split]")) {
     b.hidden = +b.dataset.split >= D;
-    b.innerHTML = `Split on ${xName(+b.dataset.split, D)}`;
+    b.innerHTML = splitLabel(+b.dataset.split, D);
   }
-  const col = bmode === "class" ? "classes" : "mean <i>ȳ</i>";
-  const rowH = (label, nd) => `<tr><td>${label}</td><td>${nd.n}</td>
-    <td>${mixHtml(nd)}</td><td>${nd.n ? fmtImp(nd.imp) : "–"}</td></tr>`;
-  let h = `<table class="imp"><tr><th></th><th>n</th><th>${col}</th>
-    <th>${name}</th></tr>`;
+  const out = document.getElementById("node-readout");
 
   if (isLeaf) {
-    h += rowH("This node", sel) + "</table>";
-    const est = bmode === "class"
-      ? `${dot(sel.pred)}<i>y</i> = ${sel.pred} (the most common class)`
-      : `${fmt(sel.pred)} (the mean label)`;
-    h += `<p class="calc">A leaf estimates <i>ŷ</i> = ${est}.</p>`;
-    if (sel.n && sel.imp > EPS) {
-      const { X, y } = bdat();
-      h += `<p class="calc">The best question on each feature:</p><ul
-        class="bests">`;
-      for (let f = 0; f < D; f++) {
-        const b = scanFeature(sel.idx, X, y, bC(), f).best;
-        h += b ? `<li>${xName(f, D)} ≤ ${fmt(b.thr)}: ${name} after
-          ${fmtImp(b.w)}, a reduction of ${fmtImp(sel.imp - b.w)}</li>`
-          : `<li>${xName(f, D)}: every sample here has the same value</li>`;
-      }
-      h += "</ul>";
-    } else if (sel.n) {
-      h += `<p class="calc">This node is pure: no split can lower its
-        ${name}.</p>`;
+    const est = isClass ? `${dot(sel.pred)}<i>y</i> = ${sel.pred}`
+      : fmt(sel.pred);
+    let h = `<p class="leaf-line">${isClass ? `${mixHtml(sel)} &middot; `
+      : ""}${name} <b>${sel.n ? fmtImp(sel.imp) : "–"}</b> &middot;
+      estimates <i>ŷ</i> = ${est}</p>`;
+    if (sel.n && sel.imp <= EPS) {
+      h += `<p class="muted">Pure: no split can lower its ${name}.</p>`;
     }
-    document.getElementById("node-readout").innerHTML = h;
+    out.innerHTML = h;
     return;
   }
 
-  const x = xName(sel.feat, D), t = fmt(sel.thr), L = sel.left;
-  const R = sel.right, n = sel.n;
-  const w = n ? (L.n * L.imp + R.n * R.imp) / n : 0;
-  h += rowH("Before", sel) + rowH(`Yes: ${x} ≤ ${t}`, L)
-    + rowH(`No: ${x} &gt; ${t}`, R) + "</table>";
-  if (n) {
-    h += `<p class="calc">After = <span class="frac"><span>${L.n}</span>
-      <span>${n}</span></span> ${fmtImp(L.imp)} + <span class="frac"><span>
-      ${R.n}</span><span>${n}</span></span> ${fmtImp(R.imp)} =
-      <b>${fmtImp(w)}</b></p>
-      <p class="calc">Reduction = ${fmtImp(sel.imp)} − ${fmtImp(w)} =
-      <b>${fmtImp(sel.imp - w)}</b></p>`;
-  } else {
-    h += `<p class="calc">No training sample reaches this node.</p>`;
-  }
-  document.getElementById("node-readout").innerHTML = h;
-
   for (const b of document.querySelectorAll("[data-feat]")) {
     b.setAttribute("aria-checked", +b.dataset.feat === sel.feat);
-    b.innerHTML = `${xName(+b.dataset.feat, D)} ≤ <i>t</i>`;
+    b.innerHTML = `<span class="ico ${+b.dataset.feat ? "h" : "v"}"></span>${
+      xName(+b.dataset.feat, D)} ≤ <i>t</i>`;
   }
-  const [lo, hi] = sel.box[sel.feat];
-  thrInput.min = lo;
-  thrInput.max = hi;
-  thrInput.step = (hi - lo) / 1000;
-  thrInput.value = sel.thr;
-  document.getElementById("thrval").innerHTML = `<i>t</i> = ${t}`;
-  if (n) drawScan(sel, w);
+  const x = xName(sel.feat, D), t = fmt(sel.thr), L = sel.left;
+  const R = sel.right, n = sel.n;
+  if (!n) {
+    out.innerHTML = `<p class="muted">No training sample reaches this
+      node.</p>`;
+    return;
+  }
+  const w = (L.n * L.imp + R.n * R.imp) / n;
+  const row = (label, nd) => `<tr><td>${label}</td><td>${nd.n}</td>
+    <td>${mixHtml(nd)}</td><td>${nd.n ? fmtImp(nd.imp) : "–"}</td></tr>`;
+  out.innerHTML = `<p class="imp-big">${name} <b>${fmtImp(sel.imp)}</b>
+      <span class="arrow">&rarr;</span> <b>${fmtImp(w)}</b>
+      <span class="drop">reduction ${fmtImp(sel.imp - w)}</span></p>
+    <table class="imp"><tr><th></th><th>n</th><th>${isClass ? "classes"
+      : "mean <i>ȳ</i>"}</th><th>${name}</th></tr>
+      ${row(`Yes: ${x} ≤ ${t}`, L)}${row(`No: ${x} &gt; ${t}`, R)}</table>
+    <p class="calc muted">after = ${L.n}/${n} &times; ${fmtImp(L.imp)} +
+      ${R.n}/${n} &times; ${fmtImp(R.imp)} = ${fmtImp(w)}</p>`;
+  drawScan(sel, w);
 }
 
 /** Weighted impurity against the threshold, for the selected split. */
@@ -531,7 +506,9 @@ function drawScan(sel, w) {
     <path class="c-scan" d="${d}"/>
     <text class="axis-label" x="${(P.x0 + P.x1) / 2}" y="${P.y1 + 34}"
       text-anchor="middle">threshold <tspan class="sym">t</tspan> on
-      ${xTspan(f, bD())}</text>`;
+      ${xTspan(f, bD())}</text>
+    <text class="axis-label" text-anchor="middle" transform="translate(13
+      ${(P.y0 + P.y1) / 2}) rotate(-90)">${impName()} after</text>`;
   if (best) {
     h += `<circle class="c-best" cx="${tx(best.thr)}" cy="${wy(best.w)}"
       r="5.5"/>`;
@@ -543,14 +520,9 @@ function drawScan(sel, w) {
   scan.dataset.lo = lo;
   scan.dataset.hi = hi;
 
-  const name = impName();
-  document.getElementById("scan-title").innerHTML = `${name} after the
-    split, at every <i>t</i> <span class="lg scan"></span>after
-    <span class="lg before"></span>before`;
   document.getElementById("scan-note").innerHTML = best
-    ? `Lowest (green ring): <i>t</i> = ${fmt(best.thr)}, ${name} after
-      ${fmtImp(best.w)}. It changes only where <i>t</i> passes a sample.
-      Click or drag the chart to set <i>t</i>.`
+    ? `Every threshold, against the ${impName()} before (dashed). Green
+      ring: the lowest. Drag here or on the plot.`
     : `Every sample here has the same ${xName(f, bD())}: no threshold
       separates them.`;
 }
@@ -559,7 +531,6 @@ function drawScan(sel, w) {
 
 const bnInput = document.getElementById("b-n");
 const bnoiseInput = document.getElementById("b-noise");
-const depthInput = document.getElementById("depth");
 
 function bUpdateControls() {
   const s = bcur(), d = bdat();
@@ -572,8 +543,6 @@ function bUpdateControls() {
     ? `${s.n} per class (${d.y.length} in all)` : `${d.y.length}`;
   bnoiseInput.value = s.noise;
   document.getElementById("b-noiseval").textContent = s.noise.toFixed(2);
-  depthInput.value = s.depth;
-  document.getElementById("depthval").textContent = `${s.depth}`;
 
   // Training error of the whole tree.
   let leaves = 0, wrong = 0, sse = 0, depth = 0;
@@ -586,13 +555,10 @@ function bUpdateControls() {
   }
   const N = d.y.length;
   const err = bmode === "class"
-    ? `${pct(wrong / N)} <span class="muted">(${wrong} of ${N})</span>`
-    : fmtImp(sse / N);
-  document.getElementById("tree-readout").innerHTML = `<div class="row">
-      <span>Training ${bmode === "class" ? "error" : "MSE"}</span>
-      <span class="val">${err}</span></div>
-    <div class="row"><span>Leaves, depth</span><span class="val">${leaves},
-      ${depth}</span></div>`;
+    ? `<b>${pct(wrong / N)}</b> (${wrong} of ${N})` : `<b>${fmtImp(sse / N)}</b>`;
+  document.getElementById("tree-readout").innerHTML = `Training
+    ${bmode === "class" ? "error" : "MSE"} ${err} &middot; ${leaves}
+    ${leaves === 1 ? "leaf" : "leaves"}, depth ${depth}`;
 }
 
 function select(nd) {
@@ -615,13 +581,11 @@ for (const b of document.querySelectorAll("[data-split]")) {
     bInvalidate();
   };
 }
-for (const id of ["best-leaf", "best-split"]) {
-  document.getElementById(id).onclick = () => {
-    const sel = bdat().sel, b = bestHere(sel);
-    if (b) setSplit(sel, b.feat, b.thr);
-    bInvalidate();
-  };
-}
+document.getElementById("best-split").onclick = () => {
+  const sel = bdat().sel, b = bestHere(sel);
+  if (b) setSplit(sel, b.feat, b.thr);
+  bInvalidate();
+};
 for (const b of document.querySelectorAll("[data-feat]")) {
   b.onclick = () => {
     const sel = bdat().sel, f = +b.dataset.feat;
@@ -635,19 +599,13 @@ document.getElementById("prune").onclick = () => {
   bInvalidate();
 };
 document.getElementById("grow").onclick = () => {
-  reroute();
-  growFrom(bdat().sel);
+  growLevel();
   bInvalidate();
 };
 document.getElementById("clear").onclick = () => {
   const d = bdat();
   d.root = d.sel = leaf();
   bInvalidate();
-};
-thrInput.oninput = () => setThr(+thrInput.value);
-depthInput.oninput = () => {
-  bcur().depth = +depthInput.value;
-  bUpdateControls();
 };
 bnInput.oninput = () => { bcur().n = +bnInput.value; bRegen(false); };
 bnoiseInput.oninput = () => {

@@ -101,7 +101,7 @@
       <ul class="try">
         <li data-show="class">With the root selected, click <em>Split on
           <i>x</i><sub>1</sub></em> and drag the split line (or the chart
-          under the table). Where is the Gini after the split lowest? Try
+          below the numbers). Where is the Gini after the split lowest? Try
           <i>x</i><sub>2</sub>, then compare with <em>Best split</em>.</li>
         <li data-show="class">Find a split where one side's Gini is higher
           than the root's. Did the split make things worse?
@@ -112,8 +112,8 @@
             a split is never above the Gini before; at worst it is equal,
             when both sides keep the root's class mix.</details>
         </li>
-        <li data-show="class">On <em>XOR</em>, <em>Grow</em> to depth 2:
-          the training error stays high. Now build it by hand: split the
+        <li data-show="class">On <em>XOR</em>, click <em>Grow one
+          level</em> twice: the training error stays high. Now build it by hand: split the
           root at <i>x</i><sub>1</sub> &le; 0, then each side at
           <i>x</i><sub>2</sub> &le; 0. Why did the greedy search miss
           this tree?
@@ -131,9 +131,9 @@
             of horizontal and vertical pieces; a closer fit needs more
             steps, so a deeper tree.</details>
         </li>
-        <li data-show="class">Set <em>Max depth</em> to 8 and <em>Grow</em>
-          from the root: training error 0%. Now <em>Resample</em>, which
-          keeps the tree. What happens to the error, and why?
+        <li data-show="class">Click <em>Grow one level</em> until the
+          training error is 0%. Now <em>Resample</em>, which keeps the
+          tree. What happens to the error, and why?
           <details class="answer"><summary>Answer</summary>It jumps. The
             deep tree carved small leaves around single stray samples; new
             samples do not fall the same way. Compare a tree of depth 2 or
@@ -144,8 +144,9 @@
           after the split lowest?</li>
         <li data-show="reg">On <em>Step</em>, where does <em>Best
           split</em> put <i>t</i>? Why there?</li>
-        <li data-show="reg">On <em>Sine</em>, grow to depth 2, 3, 4, then
-          8. How many steps can a tree of depth <i>d</i> have?
+        <li data-show="reg">On <em>Sine</em>, click <em>Grow one level</em>
+          a few times. How many steps can a tree of depth <i>d</i>
+          have?
           <details class="answer"><summary>Answer</summary>At most
             2<sup><i>d</i></sup>, one per leaf. Deep enough, the staircase
             chases the noise: <em>Resample</em> (the tree stays) to
@@ -198,80 +199,66 @@
       <div class="stage-head" id="b-legend"></div>
       <svg id="b-stage" aria-label="training samples and the tree's
         regions"></svg>
-      <p class="hint">Drag a sample to move it; drag a split line to move
-        its threshold; click a region to select its leaf.</p>
+      <p class="hint">Drag a sample or a split line. Click a region to
+        select it.</p>
     </div>
 
     <div class="side">
       <div class="card" id="tree-card">
-        <h3>Tree <span class="muted">click a node to select it</span></h3>
+        <div class="card-head">
+          <h3>Tree <span class="muted">click a node to select it</span></h3>
+          <div class="buttons">
+            <button id="grow" title="Give every leaf its best split">Grow
+              one level</button>
+            <button id="clear" title="Back to a single leaf">Clear</button>
+          </div>
+        </div>
         <div class="tree-wrap"><svg id="tree" aria-label="the tree"></svg>
         </div>
-        <div class="tree-foot">
-          <div class="readout" id="tree-readout"></div>
-          <div class="grow">
-            <label class="slider"><span>Max depth</span>
-              <input type="range" id="depth" min="1" max="8" step="1">
-              <span id="depthval" class="val"></span></label>
-            <div class="buttons">
-              <button id="grow" title="Split every leaf under the selected
-                node by its best question, down to the max depth">Grow from
-                selected</button>
-              <button id="clear" title="Back to a single leaf">Clear
-                tree</button>
-            </div>
-          </div>
-        </div>
-      </div>
+        <p class="tree-stats" id="tree-readout"></p>
 
-      <div class="card" id="node-card">
-        <h3 id="node-title">Selected node</h3>
-        <p class="path" id="node-path"></p>
-        <div class="buttons" id="leaf-tools">
-          <button data-split="0"></button>
-          <button data-split="1"></button>
-          <button id="best-leaf">Best split</button>
-        </div>
-        <div id="split-tools" class="controls">
-          <div class="field" id="feat-row"><span>Question</span>
-            <div class="seg" role="radiogroup">
+        <div id="node-panel">
+          <p class="node-path" id="node-path"></p>
+          <div class="buttons big" id="leaf-tools">
+            <button data-split="0"></button>
+            <button data-split="1"></button>
+          </div>
+          <div class="split-row" id="split-tools">
+            <div class="seg" role="radiogroup" id="feat-seg">
               <button data-feat="0" role="radio"></button>
               <button data-feat="1" role="radio"></button>
-            </div></div>
-          <label class="slider"><span>Threshold</span>
-            <input type="range" id="thr">
-            <span id="thrval" class="val"></span></label>
-          <div class="buttons">
-            <button id="best-split">Best split</button>
+            </div>
+            <button id="best-split" title="The threshold and feature with
+              the lowest impurity after the split">Best split</button>
             <button id="prune" title="Remove this question and everything
-              under it">Remove split</button>
+              under it">Remove</button>
           </div>
-        </div>
-        <div class="readout" id="node-readout"></div>
-        <div id="scan-box">
-          <h3 id="scan-title"></h3>
-          <svg id="scan" viewBox="0 0 400 178" aria-label="impurity after
-            the split against the threshold"></svg>
-          <p class="muted" id="scan-note"></p>
+          <div id="node-readout"></div>
+          <div id="scan-box">
+            <svg id="scan" viewBox="0 0 400 168" aria-label="impurity after
+              the split against the threshold"></svg>
+            <p class="muted" id="scan-note"></p>
+          </div>
         </div>
       </div>
 
       <div class="card controls">
         <div class="field"><span>Data</span>
           <div class="seg wrap" id="b-sets" role="radiogroup"></div></div>
-        <label class="slider"><span>Samples</span>
-          <input type="range" id="b-n" step="1">
-          <span id="b-nval" class="val"></span></label>
-        <label class="slider"><span>Noise</span>
-          <input type="range" id="b-noise" min="0" max="1" step="0.05">
-          <span id="b-noiseval" class="val"></span></label>
         <div class="buttons">
-          <button id="b-resample" title="Draw new samples; the tree
+          <button id="b-resample" title="Draw new samples; your tree
             stays">&#8635; Resample</button>
           <button id="b-reset" title="Undo drags">Reset</button>
         </div>
-        <p class="muted">Resample and the sliders keep your tree, so you
-          can see how it does on fresh samples.</p>
+        <details class="more">
+          <summary>More data settings</summary>
+          <label class="slider"><span>Samples</span>
+            <input type="range" id="b-n" step="1">
+            <span id="b-nval" class="val"></span></label>
+          <label class="slider"><span>Noise</span>
+            <input type="range" id="b-noise" min="0" max="1" step="0.05">
+            <span id="b-noiseval" class="val"></span></label>
+        </details>
       </div>
     </div>
   </main>

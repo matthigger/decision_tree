@@ -381,21 +381,68 @@ main { padding-top: 14px; padding-bottom: 24px; }
 .edge { stroke: #c3c9d3; stroke-width: 1.5; }
 .edge.on { stroke: var(--ink); stroke-width: 2.4; }
 .edge-label { font-size: 11px; fill: var(--muted); }
-.tree-foot {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  gap: 4px 20px;
-  align-items: start;
-  margin-top: 8px;
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 12px;
 }
-.grow .buttons { margin: 8px 0 0; }
-.grow .slider { grid-template-columns: 92px minmax(0, 1fr); }
-
-#node-card .path { color: var(--muted); font-size: .92rem; }
-#node-card .controls { margin-bottom: 8px; }
-#node-card .slider, #node-card .field {
-  grid-template-columns: 80px minmax(0, 1fr);
+.card-head h3 { margin: 0 !important; }
+.card-head .buttons { margin: 0; }
+.tree-stats {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 0 !important;
 }
+#node-panel {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.node-path { margin-bottom: 8px !important; }
+.buttons.big button { font-size: 1rem; padding: 8px 16px; }
+.split-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 8px;
+}
+.split-row .seg { flex: 1 1 200px; }
+.ico {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  background: linear-gradient(currentColor, currentColor) center / 2px 100%
+    no-repeat;
+}
+.ico.h { background-size: 100% 2px; }
+.imp-big {
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  margin: 2px 0 4px !important;
+}
+.imp-big .arrow { color: var(--muted); margin: 0 4px; }
+.imp-big .drop {
+  font-size: .85rem;
+  color: #15803d;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.leaf-line { font-variant-numeric: tabular-nums; }
+details.more summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: .92rem;
+  width: max-content;
+}
+details.more[open] summary { margin-bottom: 8px; }
+details.more .slider { margin-bottom: 8px; }
 table.imp {
   width: 100%;
   border-collapse: collapse;
@@ -532,5 +579,4 @@ button.thumb.focused { outline: 3px solid var(--ink); outline-offset: 1px; }
 }
 @media (max-width: 700px) {
   .thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .tree-foot { grid-template-columns: 1fr; }
 }

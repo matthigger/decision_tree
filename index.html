@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decision trees, visually</title>
+  <meta name="description" content="Build a decision tree one question at a
+    time, with live Gini impurity or MSE, then see how a random forest's
+    vote steadies many overfit trees.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 7 L8 17 M16 7 L24 17 M24 17 L19 26 M24 17 L29 26' stroke='%231c2230' stroke-width='2'/%3E%3Ccircle cx='16' cy='7' r='4' fill='%231c2230'/%3E%3Ccircle cx='8' cy='18' r='4' fill='%232563eb'/%3E%3Ccircle cx='24' cy='17' r='4' fill='%231c2230'/%3E%3Ccircle cx='19' cy='26' r='4' fill='%23ea580c'/%3E%3Ccircle cx='28' cy='26' r='3.5' fill='%232563eb'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Decision trees, visually</h1>
+    <p class="sub">Ask yes/no questions about one feature at a time; each
+      answer narrows down the label.</p>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-mode="class">Classification
+        tree</button>
+      <button class="tab" role="tab" data-mode="reg">Regression tree</button>
+      <button class="tab" role="tab" data-mode="forest">Random forest</button>
+    </nav>
+  </header>
+
+  <section class="intro card">
+    <div data-show="class reg">
+      <h2 data-show="class">Decision tree: classification</h2>
+      <h2 data-show="reg">Decision tree: regression</h2>
+      <p class="goal"><b>Goal:</b>
+        <span data-show="class">estimate the class <i>y</i> of a sample
+          from its features <i>x</i><sub>1</sub>,
+          <i>x</i><sub>2</sub>.</span>
+        <span data-show="reg">estimate a number <i>y</i> from a feature
+          <i>x</i>.</span></p>
+      <p class="goal approach"><b>Approach:</b> ask a chain of yes/no
+        questions, each about one feature: &ldquo;<i>x<sub>f</sub></i>
+        &le; <i>t</i>?&rdquo; Every sample starts at the root and follows
+        its answers down to a <b>leaf</b>, which estimates
+        <span data-show="class">the most common class</span><span
+        data-show="reg">the mean label</span> of the training samples that
+        land there. Training picks each question greedily: the feature and
+        threshold <i>t</i> that lower the
+        <span data-show="class">Gini impurity</span><span
+        data-show="reg">MSE</span> the most.</p>
+      <div data-show="class">
+        <div class="formula">
+          Gini = 1 &minus; &sum;<sub><i>c</i></sub>
+          <i>p<sub>c</sub></i><sup>2</sup>
+          <span class="implies">&middot;</span>
+          after = <span class="frac"><span><i>n</i><sub>yes</sub></span>
+          <span><i>n</i></span></span> Gini<sub>yes</sub> +
+          <span class="frac"><span><i>n</i><sub>no</sub></span>
+          <span><i>n</i></span></span> Gini<sub>no</sub>
+        </div>
+        <p class="muted"><i>p<sub>c</sub></i> is the share of a node's
+          samples in class <i>c</i>. Gini 0 means pure (one class); an even
+          mix of two classes gives 0.5. Yes goes left, as in sklearn's
+          plot_tree.</p>
+      </div>
+      <div data-show="reg">
+        <div class="formula">
+          MSE = <span class="frac"><span>1</span><span><i>n</i></span></span>
+          &sum;<sub><i>i</i></sub> (<i>y<sub>i</sub></i> &minus;
+          <i>ȳ</i>)<sup>2</sup>
+          <span class="implies">&middot;</span>
+          after = <span class="frac"><span><i>n</i><sub>yes</sub></span>
+          <span><i>n</i></span></span> MSE<sub>yes</sub> +
+          <span class="frac"><span><i>n</i><sub>no</sub></span>
+          <span><i>n</i></span></span> MSE<sub>no</sub>
+        </div>
+        <p class="muted"><i>ȳ</i> is the mean label of a node's
+          samples. The gray sticks are the selected node's errors: each
+          label to the mean it is estimated by (the node's own mean, or
+          after a split its side's). Yes goes left.</p>
+      </div>
+    </div>
+
+    <div data-show="forest">
+      <h2>Random forest</h2>
+      <p class="goal"><b>Goal:</b> a deep tree fits its training samples
+        perfectly, but move a few samples and it changes a lot. Steady it
+        by letting many trees vote.</p>
+      <p class="goal approach"><b>Approach:</b> grow <i>T</i> deep trees,
+        each on its own <b>bag</b>: <i>n</i> draws, with replacement, from
+        the <i>n</i> training samples (bootstrap). Each split searches only
+        a random subset of the features (here one of the two). The forest
+        estimates by majority vote.</p>
+      <div class="formula">
+        <i>&ycirc;</i>(<i>x</i>) = the most common
+        <i>&ycirc;<sub>t</sub></i>(<i>x</i>) among trees
+        <i>t</i> = 1, &hellip;, <i>T</i>
+      </div>
+      <p class="muted">A bag holds about 63% of the distinct samples, some
+        more than once. The shading is the winning class, washed out where
+        the vote is close. Click a thumbnail to see that tree alone.</p>
+    </div>
+
+    <div>
+      <h3>Try this</h3>
+      <ul class="try">
+        <li data-show="class">With the root selected, click <em>Split on
+          <i>x</i><sub>1</sub></em> and drag the split line (or the chart
+          under the table). Where is the Gini after the split lowest? Try
+          <i>x</i><sub>2</sub>, then compare with <em>Best split</em>.</li>
+        <li data-show="class">Find a split where one side's Gini is higher
+          than the root's. Did the split make things worse?
+          <details class="answer"><summary>Answer</summary>No. What counts
+            is the average over both sides, weighted by their sample
+            counts. A small, mixed side can have a higher Gini than the
+            root while the large side is much purer. The weighted Gini after
+            a split is never above the Gini before; at worst it is equal,
+            when both sides keep the root's class mix.</details>
+        </li>
+        <li data-show="class">On <em>XOR</em>, <em>Grow</em> to depth 2:
+          the training error stays high. Now build it by hand: split the
+          root at <i>x</i><sub>1</sub> &le; 0, then each side at
+          <i>x</i><sub>2</sub> &le; 0. Why did the greedy search miss
+          this tree?
+          <details class="answer"><summary>Answer</summary>The cut at 0
+            scores almost nothing by itself: both sides are still about
+            half and half. Its payoff comes only from the second cut.
+            Greedy growing scores one question at a time, so it took a cut
+            with a slightly bigger immediate reduction, after which no
+            second question helps much.</details>
+        </li>
+        <li data-show="class">On <em>Diagonal</em>, grow a few levels. What
+          shape is the boundary?
+          <details class="answer"><summary>Answer</summary>A staircase.
+            Every question is about one feature, so every boundary is made
+            of horizontal and vertical pieces; a closer fit needs more
+            steps, so a deeper tree.</details>
+        </li>
+        <li data-show="class">Set <em>Max depth</em> to 8 and <em>Grow</em>
+          from the root: training error 0%. Now <em>Resample</em>, which
+          keeps the tree. What happens to the error, and why?
+          <details class="answer"><summary>Answer</summary>It jumps. The
+            deep tree carved small leaves around single stray samples; new
+            samples do not fall the same way. Compare a tree of depth 2 or
+            3.</details>
+        </li>
+        <li data-show="reg">Split the root and drag the threshold. The
+          sticks shorten as each side gets its own mean. Where is the MSE
+          after the split lowest?</li>
+        <li data-show="reg">On <em>Step</em>, where does <em>Best
+          split</em> put <i>t</i>? Why there?</li>
+        <li data-show="reg">On <em>Sine</em>, grow to depth 2, 3, 4, then
+          8. How many steps can a tree of depth <i>d</i> have?
+          <details class="answer"><summary>Answer</summary>At most
+            2<sup><i>d</i></sup>, one per leaf. Deep enough, the staircase
+            chases the noise: <em>Resample</em> (the tree stays) to
+            see.</details>
+        </li>
+        <li data-show="reg">What does the tree estimate past
+          <i>x</i> = 1?
+          <details class="answer"><summary>Answer</summary>The mean of the
+            last leaf, flat forever: a tree cannot extrapolate (nor can
+            k-NN).</details>
+        </li>
+        <li data-show="forest">Set <em>Trees</em> to 1: one jagged tree
+          with islands. Slide up to 200. The boundary smooths and the
+          testing error falls below the one-tree line, then levels
+          off.</li>
+        <li data-show="forest">Click a few thumbnails. Every tree overfits,
+          but each one differently. Where do they agree?
+          <details class="answer"><summary>Answer</summary>Deep inside
+            each class, where the shading stays strong. They disagree near
+            the boundary and around stray samples, which is where the vote
+            washes out.</details>
+        </li>
+        <li data-show="forest">Uncheck both <em>Bootstrap</em> and
+          <em>Random feature</em>. Why do the thumbnails all match, and why
+          does <em>Trees</em> stop mattering?
+          <details class="answer"><summary>Answer</summary>Same samples,
+            same greedy rule: every tree is the same tree, and a vote of
+            copies is that one tree. Randomness makes the trees disagree;
+            the vote averages the disagreement away.</details>
+        </li>
+        <li data-show="forest">Keep adding trees. Does the testing error
+          climb back up, the way it does for a deeper tree?
+          <details class="answer"><summary>Answer</summary>No. More trees
+            only steady the vote; they do not let the forest fit the noise
+            any closer. To overfit less, change the trees
+            (<em>Max depth</em>), not their number.</details>
+        </li>
+        <li data-show="forest">On <em>Diagonal</em>, lower the noise to
+          about 0.2 and compare 1 tree with 200.
+          <details class="answer"><summary>Answer</summary>Each tree is a
+            staircase, but their steps fall in different places, so the
+            vote's boundary runs much closer to the diagonal.</details>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <main class="panel builder" data-show="class reg">
+    <div class="stage card">
+      <div class="stage-head" id="b-legend"></div>
+      <svg id="b-stage" aria-label="training samples and the tree's
+        regions"></svg>
+      <p class="hint">Drag a sample to move it; drag a split line to move
+        its threshold; click a region to select its leaf.</p>
+    </div>
+
+    <div class="side">
+      <div class="card" id="tree-card">
+        <h3>Tree <span class="muted">click a node to select it</span></h3>
+        <div class="tree-wrap"><svg id="tree" aria-label="the tree"></svg>
+        </div>
+        <div class="tree-foot">
+          <div class="readout" id="tree-readout"></div>
+          <div class="grow">
+            <label class="slider"><span>Max depth</span>
+              <input type="range" id="depth" min="1" max="8" step="1">
+              <span id="depthval" class="val"></span></label>
+            <div class="buttons">
+              <button id="grow" title="Split every leaf under the selected
+                node by its best question, down to the max depth">Grow from
+                selected</button>
+              <button id="clear" title="Back to a single leaf">Clear
+                tree</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="node-card">
+        <h3 id="node-title">Selected node</h3>
+        <p class="path" id="node-path"></p>
+        <div class="buttons" id="leaf-tools">
+          <button data-split="0"></button>
+          <button data-split="1"></button>
+          <button id="best-leaf">Best split</button>
+        </div>
+        <div id="split-tools" class="controls">
+          <div class="field" id="feat-row"><span>Question</span>
+            <div class="seg" role="radiogroup">
+              <button data-feat="0" role="radio"></button>
+              <button data-feat="1" role="radio"></button>
+            </div></div>
+          <label class="slider"><span>Threshold</span>
+            <input type="range" id="thr">
+            <span id="thrval" class="val"></span></label>
+          <div class="buttons">
+            <button id="best-split">Best split</button>
+            <button id="prune" title="Remove this question and everything
+              under it">Remove split</button>
+          </div>
+        </div>
+        <div class="readout" id="node-readout"></div>
+        <div id="scan-box">
+          <h3 id="scan-title"></h3>
+          <svg id="scan" viewBox="0 0 400 178" aria-label="impurity after
+            the split against the threshold"></svg>
+          <p class="muted" id="scan-note"></p>
+        </div>
+      </div>
+
+      <div class="card controls">
+        <div class="field"><span>Data</span>
+          <div class="seg wrap" id="b-sets" role="radiogroup"></div></div>
+        <label class="slider"><span>Samples</span>
+          <input type="range" id="b-n" step="1">
+          <span id="b-nval" class="val"></span></label>
+        <label class="slider"><span>Noise</span>
+          <input type="range" id="b-noise" min="0" max="1" step="0.05">
+          <span id="b-noiseval" class="val"></span></label>
+        <div class="buttons">
+          <button id="b-resample" title="Draw new samples; the tree
+            stays">&#8635; Resample</button>
+          <button id="b-reset" title="Undo drags">Reset</button>
+        </div>
+        <p class="muted">Resample and the sliders keep your tree, so you
+          can see how it does on fresh samples.</p>
+      </div>
+    </div>
+  </main>
+
+  <main class="panel forest" data-show="forest">
+    <div class="left">
+      <div class="stage card">
+        <div class="stage-head" id="f-legend"></div>
+        <svg id="f-stage" aria-label="the forest's vote"></svg>
+        <p class="hint">Point anywhere to see the vote there. Drag a
+          training sample to move it and regrow every tree.</p>
+      </div>
+      <div class="card thumbs-card">
+        <h3>The first 12 trees, each with its bag</h3>
+        <div class="thumbs" id="thumbs"></div>
+        <p class="muted">Dot size counts how many times the bag drew a
+          sample; samples it never drew are left out. While you point at
+          the plot, each frame takes the color that tree votes for there.
+          Faded thumbnails are past the <em>Trees</em> slider.</p>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card controls">
+        <div class="field"><span>Data</span>
+          <div class="seg wrap" id="f-sets" role="radiogroup"></div></div>
+        <label class="slider"><span>Trees</span>
+          <input type="range" id="f-trees" min="0" step="1">
+          <span id="f-treesval" class="val"></span></label>
+        <label class="slider"><span>Max depth</span>
+          <input type="range" id="f-depth" min="1" step="1">
+          <span id="f-depthval" class="val"></span></label>
+        <label class="slider"><span>Samples</span>
+          <input type="range" id="f-n" step="1">
+          <span id="f-nval" class="val"></span></label>
+        <label class="slider"><span>Noise</span>
+          <input type="range" id="f-noise" min="0" max="1" step="0.05">
+          <span id="f-noiseval" class="val"></span></label>
+        <label class="check" title="Each tree trains on n draws with
+          replacement"><input type="checkbox" id="f-boot"> Bootstrap: each
+          tree gets its own bag</label>
+        <label class="check" title="max_features = sqrt(2), rounded to
+          1"><input type="checkbox" id="f-rand"> Random feature: each split
+          searches one feature</label>
+        <div class="buttons">
+          <button id="f-resample" title="Draw new samples">&#8635;
+            Resample</button>
+          <button id="f-reset" title="Undo drags">Reset</button>
+        </div>
+      </div>
+
+      <div class="card readout" id="f-vote"></div>
+
+      <div class="card">
+        <h3 id="f-chart-title"></h3>
+        <svg id="f-chart" viewBox="0 0 340 176" aria-label="error against
+          the number of trees"></svg>
+        <div class="readout" id="f-errs"></div>
+        <p class="muted">Testing error is measured on 1,200 fresh samples
+          from the same source (not plotted). Click or drag the chart to set
+          the number of trees.</p>
+      </div>
+
+      <div class="card readout" id="f-imp"></div>
+    </div>
+  </main>
+
+  <footer>
+    Part of the DS 4400 &ldquo;visually&rdquo; demos.
+    &middot;
+    <a href="https://github.com/matthigger/decision_tree">Source on
+      GitHub</a>
+    &middot;
+    <span id="build"></span>
+  </footer>
+
+  <script src="js/version.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/tree.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/builder.js"></script>
+  <script src="js/forest.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

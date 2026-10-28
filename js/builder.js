@@ -172,13 +172,15 @@ function bBuild() {
 
   // One picker for both modes: a regression set switches the builder to
   // MSE. Each mode keeps its own tree while the other is shown.
-  const group = (label, mode, sets) => `<span class="group"><span
-    class="group-name">${label}</span>${Object.entries(sets).map(([key, s]) =>
-    `<button data-mode="${mode}" data-set="${key}" role="radio">${s.name}
-    </button>`).join("")}</span>`;
-  document.getElementById("b-sets").innerHTML = `<span
-    class="data-label">Data</span>${group("Classification", "class",
-    CLASS_SETS)}${group("Regression", "reg", REG_SETS)}`;
+  // Grid cells: "Data" spans both rows; each row is a group name, then
+  // its chips, so the names and the chips line up.
+  const group = (label, mode, sets) => `<span
+    class="group-name">${label}</span><span class="group">${Object.entries(
+    sets).map(([key, s]) => `<button data-mode="${mode}" data-set="${key}"
+    role="radio">${s.name}</button>`).join("")}</span>`;
+  document.getElementById("b-sets").innerHTML = `<span class="data-label
+    tall">Data</span>${group("Classification", "class", CLASS_SETS)}${
+    group("Regression", "reg", REG_SETS)}`;
   for (const b of document.querySelectorAll("#b-sets [data-set]")) {
     b.onclick = () => {
       const mode = b.dataset.mode, fresh = B_STATE[mode].set !== b.dataset.set;

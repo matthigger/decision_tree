@@ -210,15 +210,17 @@ main { padding-top: 14px; padding-bottom: 24px; }
   user-select: none;
 }
 .data-bar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   gap: 6px 14px;
   padding-bottom: 8px;
   margin-bottom: 6px;
   border-bottom: 1px solid var(--line);
 }
+.data-bar.one { grid-template-columns: auto minmax(0, 1fr); }
 .data-label { font-weight: 650; }
+.data-label.tall { grid-row: span 2; align-self: start; padding-top: 3px; }
 .data-bar .group {
   display: inline-flex;
   flex-wrap: wrap;
@@ -606,6 +608,8 @@ button.thumb.focused { outline: 3px solid var(--ink); outline-offset: 1px; }
 }
 @media (max-width: 520px) {
   header, main, footer { padding-left: 16px; padding-right: 16px; }
+  .data-bar { grid-template-columns: auto minmax(0, 1fr); }
+  .data-label.tall { grid-row: auto; grid-column: 1 / -1; padding-top: 0; }
   .stage { padding: 8px; }
   .intro { margin-left: 16px; margin-right: 16px; }
 }

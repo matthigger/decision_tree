@@ -148,6 +148,22 @@
         regions"></svg>
       <p class="hint">Drag a sample or a split line. Click a region to
         select it.</p>
+      <div class="data-foot">
+        <div class="buttons">
+          <button id="b-resample" title="Draw new samples; your tree
+            stays">&#8635; Resample</button>
+          <button id="b-reset" title="Undo drags">Reset</button>
+        </div>
+        <details class="more">
+          <summary>More data settings</summary>
+          <label class="slider"><span>Samples</span>
+            <input type="range" id="b-n" step="1">
+            <span id="b-nval" class="val"></span></label>
+          <label class="slider"><span>Noise</span>
+            <input type="range" id="b-noise" min="0" max="1" step="0.05">
+            <span id="b-noiseval" class="val"></span></label>
+        </details>
+      </div>
     </div>
 
     <div class="side">
@@ -189,22 +205,6 @@
         </div>
       </div>
 
-      <div class="card controls">
-        <div class="buttons">
-          <button id="b-resample" title="Draw new samples; your tree
-            stays">&#8635; Resample</button>
-          <button id="b-reset" title="Undo drags">Reset</button>
-        </div>
-        <details class="more">
-          <summary>More data settings</summary>
-          <label class="slider"><span>Samples</span>
-            <input type="range" id="b-n" step="1">
-            <span id="b-nval" class="val"></span></label>
-          <label class="slider"><span>Noise</span>
-            <input type="range" id="b-noise" min="0" max="1" step="0.05">
-            <span id="b-noiseval" class="val"></span></label>
-        </details>
-      </div>
     </div>
   </main>
 

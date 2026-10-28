@@ -385,14 +385,15 @@ main { padding-top: 14px; padding-bottom: 24px; }
 .cut.faint { stroke-width: 1.2; stroke-opacity: .25; }
 .cut-hit { stroke: transparent; stroke-width: 16; cursor: move; }
 .handle { fill: var(--ink); cursor: ew-resize; }
-.dim path { fill: #fff; fill-opacity: .55; }
+.dim { pointer-events: none; }
+.dim path { fill: #fff; fill-opacity: .82; }
 .sel-box {
   fill: none;
   stroke: var(--ink);
   stroke-width: 2.5;
   stroke-dasharray: 8 5;
 }
-.stage .s.out { opacity: .35; }
+.stage .s.out { opacity: .15; }
 .sel-band { fill: rgba(28, 34, 48, .05); }
 .stick { stroke: #8a93a3; stroke-width: 1.5; }
 .before { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 6 5; }
@@ -401,6 +402,8 @@ main { padding-top: 14px; padding-bottom: 24px; }
 .tree-wrap { overflow-x: auto; margin: 0 -6px; }
 #tree { display: block; height: auto; margin: 0 auto; }
 .tnode { cursor: pointer; }
+#tree .far { opacity: .3; }
+#tree .tnode.far:hover { opacity: .7; }
 .tnode rect:first-child { stroke: #b9c0cc; stroke-width: 1.2; }
 .tnode:hover rect:first-child { stroke: var(--muted); stroke-width: 2; }
 .tnode.sel rect:first-child { stroke: var(--ink); stroke-width: 3.5; }

@@ -167,8 +167,10 @@ function bBuild() {
   bels.samples.removeAttribute("clip-path");
   const frame = node("rect", { class: "frame", x: p.x0, y: p.y0, width: w,
     height: h });
-  bsvg.append(bels.regions, axes, bels.band, bels.curve, bels.dim,
-    bels.sticks, frame, bels.cuts, bels.samples);
+  // The wash outside the selected cell covers the other splits and the
+  // estimate too, so only the selection stays in focus.
+  bsvg.append(bels.regions, axes, bels.band, bels.curve, bels.cuts,
+    bels.dim, bels.sticks, frame, bels.samples);
 
   // One picker for both modes: a regression set switches the builder to
   // MSE. Each mode keeps its own tree while the other is shown.
@@ -271,7 +273,7 @@ function drawPlaneReg() {
   const [a, b] = sel.box[0];
   bels.band.innerHTML = `<rect class="sel-band" x="${sx(a)}" y="${p.y0}"
     width="${sx(b) - sx(a)}" height="${p.y1 - p.y0}"/>`;
-  bels.dim.innerHTML = "";
+  bels.dim.innerHTML = !sel.depth ? "" : dimPath(sel.box, sx, sy, p);
 
   // Residuals of the selected node's samples about the estimate that its
   // impurity measures: its own mean, or after a split each side's mean.
@@ -330,9 +332,18 @@ function drawDiagram({ nodes, slots, depth }) {
   const ox = T_PAD + (W - 2 * T_PAD - slots * T_SLOT) / 2;
   const cx = nd => ox + (nd.lx + 0.5) * T_SLOT;
   const ty = nd => T_PAD + nd.depth * T_LEVEL;
-  // Edges on the path from the root to the selected node are inked.
+  // Edges on the path from the root to the selected node are inked; nodes
+  // off that path and outside the selected subtree fade.
   const onPath = new Set();
   for (let nd = sel; nd; nd = nd.parent) onPath.add(nd);
+  const near = new Set(onPath);
+  (function walk(nd) {
+    near.add(nd);
+    if (nd.feat !== null) {
+      walk(nd.left);
+      walk(nd.right);
+    }
+  })(sel);
 
   let edges = "", boxes = "";
   for (const nd of nodes) {
@@ -340,10 +351,11 @@ function drawDiagram({ nodes, slots, depth }) {
       for (const [ch, word] of [[nd.left, "yes"], [nd.right, "no"]]) {
         const x1 = cx(nd), y1 = ty(nd) + T_H, x2 = cx(ch), y2 = ty(ch);
         const cls = onPath.has(ch) ? "edge on" : "edge";
-        edges += `<line class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}"
-          y2="${y2}"/><text class="edge-label" x="${(x1 + x2) / 2
+        edges += `<g${near.has(ch) ? "" : ` class="far"`}><line
+          class="${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text
+          class="edge-label" x="${(x1 + x2) / 2
           + (word === "yes" ? -8 : 8)}" y="${(y1 + y2) / 2 + 4}"
-          text-anchor="${word === "yes" ? "end" : "start"}">${word}</text>`;
+          text-anchor="${word === "yes" ? "end" : "start"}">${word}</text></g>`;
       }
     }
     const x = cx(nd) - T_W / 2, y = ty(nd), isLeaf = nd.feat === null;
@@ -374,7 +386,8 @@ function drawDiagram({ nodes, slots, depth }) {
         text-anchor="middle"><tspan class="sym">ȳ</tspan> = ${fmt(nd.pred)}
         </text>`;
     }
-    boxes += `<g class="tnode${nd === sel ? " sel" : ""}" data-id="${nd.id}">
+    boxes += `<g class="tnode${nd === sel ? " sel" : ""}${
+      near.has(nd) ? "" : " far"}" data-id="${nd.id}">
       <rect x="${x}" y="${y}" width="${T_W}" height="${T_H}" rx="8"
         fill="${fill}"/>
       <text class="t-head" x="${cx(nd)}" y="${y + 17}"

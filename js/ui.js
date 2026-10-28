@@ -45,7 +45,7 @@ function svgPoint(el, e) {
 
 /** Number with a true minus sign. */
 function fmt(x, digits = 2) {
-  return (x < 0 && x.toFixed(digits) !== (0).toFixed(digits) ? "−" : "")
+  return (x < 0 && Math.abs(x).toFixed(digits) !== (0).toFixed(digits) ? "−" : "")
     + Math.abs(x).toFixed(digits);
 }
 

@@ -143,17 +143,9 @@
   <main class="panel builder" data-show="class reg">
     <div class="stage card">
       <div class="data-bar" id="b-sets" role="radiogroup"></div>
-      <div class="stage-head" id="b-legend"></div>
-      <svg id="b-stage" aria-label="training samples and the tree's
-        regions"></svg>
-      <p class="hint">Drag a sample or a split line. Click a region to
-        select it.</p>
-      <div class="data-foot">
-        <div class="buttons">
-          <button id="b-resample" title="Draw new samples; your tree
-            stays">&#8635; Resample</button>
-          <button id="b-reset" title="Undo drags">Reset</button>
-        </div>
+      <div class="data-tools" id="b-tools">
+        <button id="b-resample" title="Draw new samples; your tree
+          stays">&#8635; Resample</button>
         <details class="more">
           <summary>More data settings</summary>
           <label class="slider"><span>Samples</span>
@@ -164,6 +156,11 @@
             <span id="b-noiseval" class="val"></span></label>
         </details>
       </div>
+      <div class="stage-head" id="b-legend"></div>
+      <svg id="b-stage" aria-label="training samples and the tree's
+        regions"></svg>
+      <p class="hint">Drag a sample or a split line. Click a region to
+        select it.</p>
     </div>
 
     <div class="side">
@@ -250,7 +247,6 @@
         <div class="buttons">
           <button id="f-resample" title="Draw new samples">&#8635;
             Resample</button>
-          <button id="f-reset" title="Undo drags">Reset</button>
         </div>
       </div>
 

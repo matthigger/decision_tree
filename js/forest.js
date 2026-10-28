@@ -436,7 +436,6 @@ document.getElementById("f-resample").onclick = () => {
   F.seed += 1;
   fRegen();
 };
-document.getElementById("f-reset").onclick = fRegen;
 
 // Dragging a training sample moves it and regrows the forest (coarsely
 // until release); moving the pointer anywhere shows the vote there.

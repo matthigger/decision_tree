@@ -45,8 +45,8 @@ function svgPoint(el, e) {
 
 /** Number with a true minus sign. */
 function fmt(x, digits = 2) {
-  return (x < 0 && Math.abs(x).toFixed(digits) !== (0).toFixed(digits) ? "−" : "")
-    + Math.abs(x).toFixed(digits);
+  const a = Math.abs(x).toFixed(digits);
+  return (x < 0 && a !== (0).toFixed(digits) ? "−" : "") + a;
 }
 
 /** Percentage, one decimal only when it is under 10% and not whole. */

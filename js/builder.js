@@ -25,6 +25,9 @@ const bsvg = document.getElementById("b-stage");
 const tsvg = document.getElementById("tree");
 const scan = document.getElementById("scan");
 const bels = {};
+// Resample and the data settings; kept by reference because rebuilding
+// the data bar detaches them.
+const bTools = document.getElementById("b-tools");
 
 function bcur() { return B_STATE[bmode]; }
 function bdat() { return bt[bmode]; }
@@ -180,9 +183,12 @@ function bBuild() {
     class="group-name">${label}</span><span class="group">${Object.entries(
     sets).map(([key, s]) => `<button data-mode="${mode}" data-set="${key}"
     role="radio">${s.name}</button>`).join("")}</span>`;
-  document.getElementById("b-sets").innerHTML = `<span class="data-label
+  const sets = document.getElementById("b-sets");
+  sets.innerHTML = `<span class="data-label
     tall">Data</span>${group("Classification", "class", CLASS_SETS)}${
     group("Regression", "reg", REG_SETS)}`;
+  // Resample and the data settings take the bar's third row.
+  sets.append(bTools);
   for (const b of document.querySelectorAll("#b-sets [data-set]")) {
     b.onclick = () => {
       const mode = b.dataset.mode, fresh = B_STATE[mode].set !== b.dataset.set;
@@ -638,7 +644,6 @@ document.getElementById("b-resample").onclick = () => {
   bcur().seed += 1;
   bRegen(false);
 };
-document.getElementById("b-reset").onclick = () => bRegen(false);
 
 tsvg.addEventListener("click", e => {
   const g = e.target.closest(".tnode");

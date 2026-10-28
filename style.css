@@ -472,18 +472,16 @@ main { padding-top: 14px; padding-bottom: 24px; }
   margin-left: 8px;
 }
 .leaf-line { font-variant-numeric: tabular-nums; }
-.data-foot {
+.data-tools {
+  grid-column: 2 / -1;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 8px 18px;
-  margin-top: 8px;
-  padding: 10px 2px 4px;
-  border-top: 1px solid var(--line);
+  gap: 6px 18px;
 }
-.data-foot .buttons { margin: 0; }
-.data-foot details.more { flex: 1 1 260px; }
-.data-foot details.more summary { padding: 5px 0; }
+.data-tools > button { padding: 3px 11px !important; }
+.data-tools details.more { flex: 1 1 260px; }
+.data-tools details.more summary { padding: 3px 0; }
 details.more summary {
   cursor: pointer;
   color: var(--muted);
@@ -625,6 +623,7 @@ button.thumb.focused { outline: 3px solid var(--ink); outline-offset: 1px; }
   header, main, footer { padding-left: 16px; padding-right: 16px; }
   .data-bar { grid-template-columns: auto minmax(0, 1fr); }
   .data-label.tall { grid-row: auto; grid-column: 1 / -1; padding-top: 0; }
+  .data-tools { grid-column: 1 / -1; }
   .stage { padding: 8px; }
   .intro { margin-left: 16px; margin-right: 16px; }
 }

@@ -16,9 +16,8 @@
     <p class="sub">Ask yes/no questions about one feature at a time; each
       answer narrows down the label.</p>
     <nav class="tabs" role="tablist">
-      <button class="tab" role="tab" data-mode="class">Classification
+      <button class="tab" role="tab" data-mode="class">Decision
         tree</button>
-      <button class="tab" role="tab" data-mode="reg">Regression tree</button>
       <button class="tab" role="tab" data-mode="forest">Random forest</button>
     </nav>
   </header>
@@ -99,24 +98,16 @@
     <div>
       <h3>Try this</h3>
       <ul class="try">
-        <li data-show="class">With the root selected, click <em>Split on
-          <i>x</i><sub>1</sub></em> and drag the split line (or the chart
-          below the numbers). Where is the Gini after the split lowest? Try
-          <i>x</i><sub>2</sub>, then compare with <em>Best split</em>.</li>
-        <li data-show="class">Find a split where one side's Gini is higher
-          than the root's. Did the split make things worse?
-          <details class="answer"><summary>Answer</summary>No. What counts
-            is the average over both sides, weighted by their sample
-            counts. A small, mixed side can have a higher Gini than the
-            root while the large side is much purer. The weighted Gini after
-            a split is never above the Gini before; at worst it is equal,
-            when both sides keep the root's class mix.</details>
-        </li>
+        <li data-show="class reg">With the root selected, click a
+          <em>Split</em> button and drag the split line (or the chart below
+          the numbers). Where is the
+          <span data-show="class">Gini</span><span data-show="reg">MSE</span>
+          after the split lowest? Compare with <em>Best split</em>.</li>
         <li data-show="class">On <em>XOR</em>, click <em>Grow one
-          level</em> twice: the training error stays high. Now build it by hand: split the
-          root at <i>x</i><sub>1</sub> &le; 0, then each side at
-          <i>x</i><sub>2</sub> &le; 0. Why did the greedy search miss
-          this tree?
+          level</em> twice: the training error stays high. Now build it by
+          hand: split the root at <i>x</i><sub>1</sub> &le; 0, then each
+          side at <i>x</i><sub>2</sub> &le; 0. Why did the greedy search
+          miss this tree?
           <details class="answer"><summary>Answer</summary>The cut at 0
             scores almost nothing by itself: both sides are still about
             half and half. Its payoff comes only from the second cut.
@@ -124,51 +115,19 @@
             with a slightly bigger immediate reduction, after which no
             second question helps much.</details>
         </li>
-        <li data-show="class">On <em>Diagonal</em>, grow a few levels. What
-          shape is the boundary?
-          <details class="answer"><summary>Answer</summary>A staircase.
-            Every question is about one feature, so every boundary is made
-            of horizontal and vertical pieces; a closer fit needs more
-            steps, so a deeper tree.</details>
-        </li>
-        <li data-show="class">Click <em>Grow one level</em> until the
-          training error is 0%. Now <em>Resample</em>, which keeps the
-          tree. What happens to the error, and why?
+        <li data-show="class reg">Click <em>Grow one level</em> until the
+          training <span data-show="class">error is 0%</span><span
+          data-show="reg">MSE is near 0</span>. Now <em>Resample</em>, which
+          keeps the tree. What happens to the error, and why?
           <details class="answer"><summary>Answer</summary>It jumps. The
             deep tree carved small leaves around single stray samples; new
             samples do not fall the same way. Compare a tree of depth 2 or
             3.</details>
         </li>
-        <li data-show="reg">Split the root and drag the threshold. The
-          sticks shorten as each side gets its own mean. Where is the MSE
-          after the split lowest?</li>
-        <li data-show="reg">On <em>Step</em>, where does <em>Best
-          split</em> put <i>t</i>? Why there?</li>
-        <li data-show="reg">On <em>Sine</em>, click <em>Grow one level</em>
-          a few times. How many steps can a tree of depth <i>d</i>
-          have?
-          <details class="answer"><summary>Answer</summary>At most
-            2<sup><i>d</i></sup>, one per leaf. Deep enough, the staircase
-            chases the noise: <em>Resample</em> (the tree stays) to
-            see.</details>
-        </li>
-        <li data-show="reg">What does the tree estimate past
-          <i>x</i> = 1?
-          <details class="answer"><summary>Answer</summary>The mean of the
-            last leaf, flat forever: a tree cannot extrapolate (nor can
-            k-NN).</details>
-        </li>
         <li data-show="forest">Set <em>Trees</em> to 1: one jagged tree
           with islands. Slide up to 200. The boundary smooths and the
           testing error falls below the one-tree line, then levels
           off.</li>
-        <li data-show="forest">Click a few thumbnails. Every tree overfits,
-          but each one differently. Where do they agree?
-          <details class="answer"><summary>Answer</summary>Deep inside
-            each class, where the shading stays strong. They disagree near
-            the boundary and around stray samples, which is where the vote
-            washes out.</details>
-        </li>
         <li data-show="forest">Uncheck both <em>Bootstrap</em> and
           <em>Random feature</em>. Why do the thumbnails all match, and why
           does <em>Trees</em> stop mattering?
@@ -177,25 +136,13 @@
             copies is that one tree. Randomness makes the trees disagree;
             the vote averages the disagreement away.</details>
         </li>
-        <li data-show="forest">Keep adding trees. Does the testing error
-          climb back up, the way it does for a deeper tree?
-          <details class="answer"><summary>Answer</summary>No. More trees
-            only steady the vote; they do not let the forest fit the noise
-            any closer. To overfit less, change the trees
-            (<em>Max depth</em>), not their number.</details>
-        </li>
-        <li data-show="forest">On <em>Diagonal</em>, lower the noise to
-          about 0.2 and compare 1 tree with 200.
-          <details class="answer"><summary>Answer</summary>Each tree is a
-            staircase, but their steps fall in different places, so the
-            vote's boundary runs much closer to the diagonal.</details>
-        </li>
       </ul>
     </div>
   </section>
 
   <main class="panel builder" data-show="class reg">
     <div class="stage card">
+      <div class="data-bar" id="b-sets" role="radiogroup"></div>
       <div class="stage-head" id="b-legend"></div>
       <svg id="b-stage" aria-label="training samples and the tree's
         regions"></svg>
@@ -243,8 +190,6 @@
       </div>
 
       <div class="card controls">
-        <div class="field"><span>Data</span>
-          <div class="seg wrap" id="b-sets" role="radiogroup"></div></div>
         <div class="buttons">
           <button id="b-resample" title="Draw new samples; your tree
             stays">&#8635; Resample</button>
@@ -266,6 +211,7 @@
   <main class="panel forest" data-show="forest">
     <div class="left">
       <div class="stage card">
+        <div class="data-bar" id="f-sets" role="radiogroup"></div>
         <div class="stage-head" id="f-legend"></div>
         <svg id="f-stage" aria-label="the forest's vote"></svg>
         <p class="hint">Point anywhere to see the vote there. Drag a
@@ -283,8 +229,6 @@
 
     <div class="side">
       <div class="card controls">
-        <div class="field"><span>Data</span>
-          <div class="seg wrap" id="f-sets" role="radiogroup"></div></div>
         <label class="slider"><span>Trees</span>
           <input type="range" id="f-trees" min="0" step="1">
           <span id="f-treesval" class="val"></span></label>

@@ -1,20 +1,19 @@
 # decision_tree
 
 Interactive teaching demo of decision trees and random forests, a
-companion to [KNN, visually](https://github.com/matthigger/knn). Three
+companion to [KNN, visually](https://github.com/matthigger/knn). Two
 tabs:
 
-- **Classification tree.** Samples in the plane (Blobs, XOR, Diagonal,
-  Moons, Rings). Click a node in the tree diagram (or a region of the
-  plot), split it on x1 or x2, and drag the threshold: on the plot, with
-  the slider, or on a chart of the weighted Gini after the split against
-  the threshold. A table shows the Gini before, on each side, the
-  weighted average after and the reduction. Best split takes the greedy
-  choice; Grow splits every leaf under the selected node greedily down to
-  a max depth.
-- **Regression tree.** The same builder for y against x (Sine, Step,
-  Linear, Chirp), with MSE in place of Gini. The estimate is a staircase
-  of leaf means; gray sticks show the selected node's errors.
+- **Decision tree.** The data picker above the plot holds two groups.
+  Classification sets (Blobs, XOR, Diagonal, Moons, Rings) put samples in
+  the plane, with Gini; regression sets (Sine, Step, Linear, Chirp) plot y
+  against x, with MSE, a staircase of leaf means and gray sticks for the
+  selected node's errors. Click a node in the tree diagram (or a region of
+  the plot), split it, and drag the threshold on the plot or on a chart of
+  the impurity after the split against the threshold. The readout shows
+  the impurity before and after, each side's, and the arithmetic. Best
+  split takes the greedy choice; Grow one level gives every leaf its best
+  split. Each mode keeps its own tree.
 - **Random forest.** 200 deep trees, each on its own bootstrap bag and
   each split searching one random feature; the plot shades the majority
   vote, washed out where the trees disagree. Thumbnails show the first 12
@@ -36,8 +35,8 @@ Open `index.html` in a browser, or serve it:
 python3 -m http.server 8000   # then visit http://localhost:8000
 ```
 
-Link straight to a tab with `#classification`, `#regression` or
-`#forest`.
+Link straight to the tree tab with `#classification` or `#regression`
+(which data group it opens on), or to `#forest`.
 
 ## Publish on GitHub Pages
 

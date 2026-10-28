@@ -162,9 +162,10 @@ function fBuild() {
     height: h });
   fsvg.append(fels.region, axes, frame, fels.train, fels.hover);
 
-  document.getElementById("f-sets").innerHTML = Object.entries(CLASS_SETS)
-    .map(([key, s]) => `<button data-set="${key}" role="radio">${s.name}
-      </button>`).join("");
+  document.getElementById("f-sets").innerHTML = `<span
+    class="data-label">Data</span><span class="group">${Object.entries(
+    CLASS_SETS).map(([key, s]) => `<button data-set="${key}" role="radio">${
+    s.name}</button>`).join("")}</span>`;
   for (const b of document.querySelectorAll("#f-sets [data-set]")) {
     b.onclick = () => {
       F.set = b.dataset.set;

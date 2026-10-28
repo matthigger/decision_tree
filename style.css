@@ -209,6 +209,38 @@ main { padding-top: 14px; padding-bottom: 24px; }
   touch-action: none;
   user-select: none;
 }
+.data-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding-bottom: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.data-label { font-weight: 650; }
+.data-bar .group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.group-name {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.data-bar button {
+  border-radius: 999px !important;
+  padding: 3px 11px !important;
+}
+.data-bar button[aria-checked="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
 .stage-head {
   display: flex;
   flex-wrap: wrap;

@@ -170,15 +170,21 @@ function bBuild() {
   bsvg.append(bels.regions, axes, bels.band, bels.curve, bels.dim,
     bels.sticks, frame, bels.cuts, bels.samples);
 
-  const sets = bmode === "class" ? CLASS_SETS : REG_SETS;
-  document.getElementById("b-sets").innerHTML = Object.entries(sets)
-    .map(([key, s]) => `<button data-set="${key}" role="radio">${s.name}
-      </button>`).join("");
+  // One picker for both modes: a regression set switches the builder to
+  // MSE. Each mode keeps its own tree while the other is shown.
+  const group = (label, mode, sets) => `<span class="group"><span
+    class="group-name">${label}</span>${Object.entries(sets).map(([key, s]) =>
+    `<button data-mode="${mode}" data-set="${key}" role="radio">${s.name}
+    </button>`).join("")}</span>`;
+  document.getElementById("b-sets").innerHTML = `<span
+    class="data-label">Data</span>${group("Classification", "class",
+    CLASS_SETS)}${group("Regression", "reg", REG_SETS)}`;
   for (const b of document.querySelectorAll("#b-sets [data-set]")) {
     b.onclick = () => {
-      if (bcur().set === b.dataset.set) return;
-      bcur().set = b.dataset.set;
-      bRegen(true);
+      const mode = b.dataset.mode, fresh = B_STATE[mode].set !== b.dataset.set;
+      B_STATE[mode].set = b.dataset.set;
+      if (mode !== bmode) setMode(mode);
+      if (fresh) bRegen(true);
     };
   }
 }
@@ -535,7 +541,8 @@ const bnoiseInput = document.getElementById("b-noise");
 function bUpdateControls() {
   const s = bcur(), d = bdat();
   for (const b of document.querySelectorAll("#b-sets [data-set]")) {
-    b.setAttribute("aria-checked", b.dataset.set === s.set);
+    b.setAttribute("aria-checked",
+      b.dataset.mode === bmode && b.dataset.set === s.set);
   }
   [bnInput.min, bnInput.max] = B_N_RANGE[bmode];
   bnInput.value = s.n;
